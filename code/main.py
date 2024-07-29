@@ -9,9 +9,29 @@ import numpy as np
 
 from emoji_utils import download_emoji_image
 from image_utils import create_centered_image, get_text_size
-from text_utils import preprocess_text, remove_word, is_english, is_arabic, contains_emoji
+from text_utils import (
+    preprocess_text,
+    remove_word,
+    is_english,
+    is_arabic,
+    contains_emoji,
+)
 
-arabic_text = "حاولوا حظري وإسكاتي عندما كشفت هذه الخدعة للحصول على سكنات ببجي غير محدودة مجانا، و التي يستعملها أشهر اللاعبين، لكن مع زوبا لا للاحتكار سوف نجعل كل من يشاهد الفيديو يحصل على اي سكن يريد سواءا كان زي الغراب الاحمر او سكن المومياء و حتى سكن الدجاجة المضحك 😂، لكن من فضلكم لا تختاروا نفس السكن، لا نريد ان يحصل تضخم في اللعبة 😂😂، نعم الامر لا يصدق لكن ساثبت لك ان الطريقة تشتغل، فجيش زوبا في التعليقات سيخبرونك 👇، لذا أحضر بعض الفشار و شاهد العجب يحدث، كل ما عليكم 😂😂 فعله لتحقيق أمنيتكم 🧙‍♀️😂، هو دعمي أولا بلايك و follow، من فضلكم 🥺، اذا أتممت الخطوة الاولى، كل ما عليكم فعله هو زيارة موقع Zoba dot games واختيار شعار بابجي ثم إتباع الخطوات الموضحة في الموقع. فقط قوموا بإدخال معرف اللاعب ال ID أو اسم المستخدم الخاص بكم في اللعبة. ومبروك عليكم"
+# Define the path to the images folder
+images_folder = "images"
+
+# Delete all files in the images folder
+for filename in os.listdir(images_folder):
+    file_path = os.path.join(images_folder, filename)
+    try:
+        if os.path.isfile(file_path) or os.path.islink(file_path):
+            os.unlink(file_path)
+        elif os.path.isdir(file_path):
+            os.rmdir(file_path)
+    except Exception as e:
+        print(f"Failed to delete {file_path}. Reason: {e}")
+
+arabic_text = "السلام عليكم و رحمة الله بركته 🧙‍♀️ and hello"
 
 preprocessed_text = preprocess_text(arabic_text)
 
@@ -34,7 +54,7 @@ emoji_font = "E:/Noto_Color_Emoji/NotoColorEmoji-Regular.ttf"
 for index, text in enumerate(words_list):
     if contains_emoji(text):
         emoji_image = download_emoji_image(text)
-        create_centered_image(emoji_image, f"images/test_output_{index}.png")
+        create_centered_image(emoji_image, f"{images_folder}/test_output_{index}.png")
         print(f"Emoji image saved for {text}")
         continue
 
@@ -71,5 +91,5 @@ for index, text in enumerate(words_list):
             draw.text(x=x, y=y, body=text)
             draw(img)
 
-        img.save(filename=f"images/test_output_{index}.png")
+        img.save(filename=f"{images_folder}/test_output_{index}.png")
         print(f"Text image saved for {text}")
