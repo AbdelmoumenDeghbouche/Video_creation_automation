@@ -1,11 +1,12 @@
 import re
-from moviepy.editor import VideoFileClip
+from moviepy.editor import VideoFileClip, AudioFileClip
 from wand.image import Image
 from wand.drawing import Drawing
 from wand.color import Color
 import cv2
 import numpy as np
 import os
+from generate_ai_voice import generate_ai_voice
 
 
 def add_transparent_image(background, foreground, x_offset=None, y_offset=None):
@@ -56,7 +57,7 @@ def add_transparent_image(background, foreground, x_offset=None, y_offset=None):
 
 
 def process_video_with_images(
-    video_path, image_paths, output_path, target_duration, duration_per_image=0.4
+    video_path, image_paths, output_path, target_duration, duration_per_image
 ):
     # Open the video file
     cap = cv2.VideoCapture(video_path)
@@ -127,6 +128,23 @@ def process_video_with_images(
     cv2.destroyAllWindows()
 
 
+def extract_number(filename):
+    match = re.search(r"\d+", filename)
+    return int(match.group()) if match else 0
+
+
+def add_voice_to_video(video_path, arabic_text):
+
+    video = VideoFileClip(video_path)
+    audio = AudioFileClip("audios/audio1.mp3")
+    video = video.set_audio(audio)
+    video.write_videofile(
+        "results/output_with_audio.mp4", codec="libx264", audio_codec="aac"
+    )
+    video.close()
+    audio.close()
+
+
 # Hard-coded file paths
 video_path = "videos/Subway Surfers (2024) - Gameplay [4K 9x16] No Copyright.mp4"
 images_dir = "images"
@@ -140,20 +158,25 @@ image_paths = [
 ]
 
 
-def extract_number(filename):
-    match = re.search(r"\d+", filename)
-    return int(match.group()) if match else 0
-
-
 # Sort the list using the custom key
 sorted_image_paths = sorted(image_paths, key=extract_number)
 print(sorted_image_paths)
 num_images = len(sorted_image_paths)
 
 output_path = "results/output.mp4"
-target_duration = num_images * 0.4  # target duration in seconds
+
 
 video_clip = VideoFileClip(video_path)
-
+arabic_text = "السلام عليكم و رحمة الله تعالى و بركاته 🧙‍♀️ and hello"
+generate_ai_voice(arabic_text)
+audio_clip = AudioFileClip("audios/audio1.mp3")
+target_duration = audio_clip.duration
 # Process the video with the selected images
-process_video_with_images(video_path, sorted_image_paths, output_path, target_duration)
+duration_per_image = (
+    audio_clip.duration - 0.01
+) / num_images  # frame duration in seconds which is the audio duration divided by the number of words in the text script
+process_video_with_images(
+    video_path, sorted_image_paths, output_path, target_duration, duration_per_image
+)
+
+add_voice_to_video(output_path, arabic_text)
