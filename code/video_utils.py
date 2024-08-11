@@ -9,7 +9,9 @@ import os
 from generate_ai_voice import generate_ai_voice
 
 
-def add_transparent_image(background, foreground, x_offset=None, y_offset=None):
+def add_transparent_image(
+    background, foreground, x_offset=None, y_offset=None, scale_factor=1.0
+):
     bg_h, bg_w, bg_channels = background.shape
     fg_h, fg_w, fg_channels = foreground.shape
 
@@ -20,31 +22,38 @@ def add_transparent_image(background, foreground, x_offset=None, y_offset=None):
         fg_channels == 4
     ), f"Foreground image should have exactly 4 channels (RGBA). Found: {fg_channels}"
 
-    # Center by default
-    if x_offset is None:
-        x_offset = (bg_w - fg_w) // 2
-    if y_offset is None:
-        y_offset = (bg_h - fg_h) // 2
+    # Resize the foreground image based on the scale_factor for the popup effect
+    new_fg_w = int(fg_w * scale_factor)
+    new_fg_h = int(fg_h * scale_factor)
+    foreground_resized = cv2.resize(
+        foreground, (new_fg_w, new_fg_h), interpolation=cv2.INTER_AREA
+    )
 
-    w = min(fg_w, bg_w, fg_w + x_offset, bg_w - x_offset)
-    h = min(fg_h, bg_h, fg_h + y_offset, bg_h - y_offset)
+    # Recalculate offsets for the resized image
+    if x_offset is None:
+        x_offset = (bg_w - new_fg_w) // 2
+    if y_offset is None:
+        y_offset = (bg_h - new_fg_h) // 2
+
+    w = min(new_fg_w, bg_w, new_fg_w + x_offset, bg_w - x_offset)
+    h = min(new_fg_h, bg_h, new_fg_h + y_offset, bg_h - y_offset)
 
     if w < 1 or h < 1:
         return
 
-    # Clip foreground and background images to the overlapping regions
+    # Clip the resized foreground and the background to the overlapping regions
     bg_x = max(0, x_offset)
     bg_y = max(0, y_offset)
     fg_x = max(0, x_offset * -1)
     fg_y = max(0, y_offset * -1)
-    foreground = foreground[fg_y : fg_y + h, fg_x : fg_x + w]
+    foreground_resized = foreground_resized[fg_y : fg_y + h, fg_x : fg_x + w]
     background_subsection = background[bg_y : bg_y + h, bg_x : bg_x + w]
 
-    # Separate alpha and color channels from the foreground image
-    foreground_colors = foreground[:, :, :3]
-    alpha_channel = foreground[:, :, 3] / 255.0  # 0-255 => 0.0-1.0
+    # Separate alpha and color channels from the resized foreground image
+    foreground_colors = foreground_resized[:, :, :3]
+    alpha_channel = foreground_resized[:, :, 3] / 255.0  # 0-255 => 0.0-1.0
 
-    # Construct an alpha_mask that matches the image shape
+    # Construct an alpha_mask that matches the resized image shape
     alpha_mask = np.dstack((alpha_channel, alpha_channel, alpha_channel))
 
     # Combine the background with the overlay image weighted by alpha
@@ -111,9 +120,21 @@ def process_video_with_images(
         if frame_count < total_image_frames:
             image_index = frame_count // frames_per_image
             foreground = foregrounds[image_index]
-            # Add transparent image to the frame
+
+            # Calculate the scale factor for the popup effect
+            image_frame_index = frame_count % frames_per_image
+            if (
+                image_frame_index < frames_per_image // 4
+            ):  # Adjust this value for timing
+                scale_factor = (
+                    0.5 + (image_frame_index / (frames_per_image // 4)) * 0.5
+                )  # Scale from 0.5 to 1.0
+            else:
+                scale_factor = 1.0
+
+            # Add transparent image to the frame with popup effect
             try:
-                add_transparent_image(frame, foreground)
+                add_transparent_image(frame, foreground, scale_factor=scale_factor)
             except Exception as e:
                 print(f"Error processing image {image_paths[image_index]}: {e}")
                 return

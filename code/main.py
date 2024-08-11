@@ -31,7 +31,7 @@ for filename in os.listdir(images_folder):
     except Exception as e:
         print(f"Failed to delete {file_path}. Reason: {e}")
 
-arabic_text = "السلام عليكم و رحمة الله بركته 🧙‍♀️ and hello"
+arabic_text = "السلام عليكم و رحمة الله تعالى و بركته 🧙‍♀️ and hello"
 
 preprocessed_text = preprocess_text(arabic_text)
 
