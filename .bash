@@ -1,0 +1,1 @@
+mkdir -p "$(pwd)/videos/ASMR" "$(pwd)/videos/Cleaning" "$(pwd)/videos/clips" "$(pwd)/videos/gamingSetup" "$(pwd)/videos/Minecraft" "$(pwd)/videos/other" "$(pwd)/videos/Subway"
