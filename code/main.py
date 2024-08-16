@@ -14,14 +14,13 @@ class TextRequest(BaseModel):
     arabic_text: str
     background_video: str
 
-
 @app.post("/generate-video/")
 async def generate_video(request: TextRequest):
     arabic_text = request.arabic_text
     background_video_folder = request.background_video
     try:
         # Get the path to the background video folder
-        video_folder_path = f"videos/{background_video_folder}"
+        video_folder_path = f"videos/{background_video_folder}/videos"
         
         # List all video files in the folder
         video_files = [f for f in os.listdir(video_folder_path) if f.endswith(('.mp4', '.avi', '.mkv'))]
@@ -64,5 +63,4 @@ async def generate_video(request: TextRequest):
 
 if __name__ == "__main__":
     import uvicorn
-
     uvicorn.run(app, host="0.0.0.0", port=8000)
