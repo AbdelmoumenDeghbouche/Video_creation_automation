@@ -33,11 +33,14 @@ def generate_ai_voice(arabic_text):
     }
 
     response = requests.post(url, json=payload, headers=headers)
-
     if response.status_code == 200:
-        with open("audios/audio1.mp3", "wb") as audio_file:
-            audio_file.write(response.content)
-        print("Audio file generated successfully.")
+        audio_file_path = "audios/audio1.mp3"
+        if not os.path.exists(audio_file_path):
+            with open(audio_file_path, "wb") as audio_file:
+                audio_file.write(response.content)
+            print("Audio file generated successfully.")
+        else:
+            print("Audio file already exists.")
     else:
         print(f"Error: {response.status_code}")
         print(response.text)

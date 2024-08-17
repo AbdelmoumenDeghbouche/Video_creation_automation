@@ -10,9 +10,11 @@ import random
 
 app = FastAPI()
 
+
 class TextRequest(BaseModel):
     arabic_text: str
     background_video: str
+
 
 @app.post("/generate-video/")
 async def generate_video(request: TextRequest):
@@ -21,21 +23,27 @@ async def generate_video(request: TextRequest):
     try:
         # Get the path to the background video folder
         video_folder_path = f"videos/{background_video_folder}/videos"
-        
+
         # List all video files in the folder
-        video_files = [f for f in os.listdir(video_folder_path) if f.endswith(('.mp4', '.avi', '.mkv'))]
-        
+        video_files = [
+            f
+            for f in os.listdir(video_folder_path)
+            if f.endswith((".mp4", ".avi", ".mkv"))
+        ]
+
         if not video_files:
-            raise HTTPException(status_code=404, detail="No videos found in the specified folder")
-        
+            raise HTTPException(
+                status_code=404, detail="No videos found in the specified folder"
+            )
+
         # Choose a random video
         selected_video = random.choice(video_files)
         selected_video_path = os.path.join(video_folder_path, selected_video)
 
         # Step 1: Generate AI audio, Split, and crop the selected random video
-        generate_ai_voice(arabic_text)
+        # generate_ai_voice(arabic_text)
         process_video(selected_video_path, f"videos/{background_video_folder}/clips")
-        
+
         # Step 2: Generate images from text
         images_folder = "images"
         generate_images_from_text(arabic_text, images_folder)
@@ -63,4 +71,5 @@ async def generate_video(request: TextRequest):
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)
