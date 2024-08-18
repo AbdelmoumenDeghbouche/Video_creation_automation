@@ -1,6 +1,6 @@
 from youtubesearchpython import VideosSearch
 from download_yt import download_video
-
+from download_mp3 import download_audio
 
 def get_first_video_under_59_seconds(search_query):
     try:
@@ -31,7 +31,7 @@ def get_first_video_under_59_seconds(search_query):
 
 
 # Use the function
-search_query = "gift green screen"
+search_query = "clapping sound effect"
 video_link = get_first_video_under_59_seconds(search_query)
 print(f"First video under 59 seconds for '{search_query}': {video_link}")
-download_video(video_link)
+download_audio(video_link)
