@@ -24,11 +24,20 @@ def clear_images_folder(folder_path):
         except Exception as e:
             print(f"Failed to delete {file_path}. Reason: {e}")
 
+def separate_linked_arabic_english(text):
+    # This regular expression finds Arabic letters followed by English letters or vice versa
+    return re.sub(r'([ا-ي]+)([a-zA-Z]+)|([a-zA-Z]+)([ا-ي]+)', r'\1\3 \2\4', text)
+
 def process_text(text):
     preprocessed_text = preprocess_text(text)
+    
+    # Separate linked Arabic and English text
+    separated_text = separate_linked_arabic_english(preprocessed_text)
+    
     punctuation = "،.؟!؛:"
     pattern = f"[{punctuation}]"
-    text_without_punctuation = re.sub(pattern, "", preprocessed_text)
+    text_without_punctuation = re.sub(pattern, "", separated_text)
+    
     return text_without_punctuation.split()
 
 def generate_images(words_list, images_folder):

@@ -52,13 +52,3 @@ overlay_video_path = (
 
 output_video = "results/output_overlay.mp4"
 
-# Set overlay_start_time to 15 seconds, position to center bottom with margin, and resize to 50%
-overlay_video(
-    background_video,
-    overlay_video_path,
-    output_video,
-    scale_factor=0.3,  # Resize to 50% of its original size
-    overlay_start_time=15,  # Overlay video starts at second 15
-    bottom_margin=50,  # 50 pixels margin from the bottom
-    green_screen_color=[0, 255, 0],  # Specify the green color to remove
-)
