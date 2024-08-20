@@ -114,6 +114,17 @@ def extract_number(filename):
     match = re.search(r"\d+", filename)
     return int(match.group()) if match else 0
 
+def calculate_subtitle_durations(audio_duration, all_script_words_list):
+    total_chars = sum(len(word) for word in all_script_words_list)
+    durations = []
+
+    for word in all_script_words_list:
+        word_length = len(word)
+        word_duration = (word_length / total_chars) * audio_duration
+        durations.append(word_duration)
+    
+    return durations
+
 
 def add_voice_to_video(video_path, audio_path, output_path):
     video = VideoFileClip(video_path)

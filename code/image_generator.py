@@ -13,6 +13,9 @@ from text_utils import (
     contains_emoji,
 )
 
+# Global variable to store the index of the "zoba" image
+zoba_image_index = None
+
 def clear_images_folder(folder_path):
     for filename in os.listdir(folder_path):
         file_path = os.path.join(folder_path, filename)
@@ -25,22 +28,19 @@ def clear_images_folder(folder_path):
             print(f"Failed to delete {file_path}. Reason: {e}")
 
 def separate_linked_arabic_english(text):
-    # This regular expression finds Arabic letters followed by English letters or vice versa
     return re.sub(r'([ا-ي]+)([a-zA-Z]+)|([a-zA-Z]+)([ا-ي]+)', r'\1\3 \2\4', text)
 
 def process_text(text):
     preprocessed_text = preprocess_text(text)
-    
-    # Separate linked Arabic and English text
     separated_text = separate_linked_arabic_english(preprocessed_text)
-    
     punctuation = "،.؟!؛:"
     pattern = f"[{punctuation}]"
     text_without_punctuation = re.sub(pattern, "", separated_text)
-    
     return text_without_punctuation.split()
 
 def generate_images(words_list, images_folder):
+    global zoba_image_index  # Declare global variable to be modified inside the function
+
     colors = ["#FDFA54", "#72F459", "white"]
     outline_color = "black"
     outline_thickness = 23
@@ -87,6 +87,11 @@ def generate_images(words_list, images_folder):
 
             img.save(filename=f"{images_folder}/test_output_{index}.png")
             print(f"Text image saved for {text}")
+
+            # Check if the word "zoba" is present and store the index
+            if text == "zoba":
+                zoba_image_index = index
+                print(f"'zoba' word found at index: {zoba_image_index}")
 
 def generate_images_from_text(arabic_text, images_folder):
     clear_images_folder(images_folder)
