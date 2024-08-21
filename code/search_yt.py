@@ -31,7 +31,7 @@ def get_first_video_under_59_seconds(search_query):
 
 
 # Use the function
-search_query = "clapping sound effect"
+search_query = "time green screen"
 video_link = get_first_video_under_59_seconds(search_query)
 print(f"First video under 59 seconds for '{search_query}': {video_link}")
-download_audio(video_link)
+download_video(video_link)

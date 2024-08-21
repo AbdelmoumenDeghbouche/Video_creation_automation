@@ -3,7 +3,7 @@ import os
 import cv2
 import numpy as np
 from moviepy.editor import VideoFileClip, AudioFileClip
-from generate_ai_voice import generate_ai_voice
+from image_generator import process_text
 
 
 def add_transparent_image(
@@ -49,7 +49,7 @@ def add_transparent_image(
 
 
 def process_video_with_images(
-    video_path, image_paths, output_path, target_duration, duration_per_image
+    video_path, image_paths, output_path, target_duration, image_durations
 ):
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
@@ -62,7 +62,7 @@ def process_video_with_images(
     original_duration = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) / fps
 
     total_frames = int(min(original_duration, target_duration) * fps)
-    frames_per_image = int(fps * duration_per_image)
+    total_images = len(image_paths)
 
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
     out = cv2.VideoWriter(output_path, fourcc, fps, (frame_width, frame_height))
@@ -77,30 +77,38 @@ def process_video_with_images(
             return
 
     frame_count = 0
-    total_images = len(foregrounds)
-    total_image_frames = total_images * frames_per_image
+    current_image_index = 0
+    current_image_frame_count = 0
+    current_image_duration = image_durations[current_image_index]
+    current_image_frames = int(current_image_duration * fps)
 
     while cap.isOpened() and frame_count < total_frames:
         ret, frame = cap.read()
         if not ret:
             break
 
-        if frame_count < total_image_frames:
-            image_index = frame_count // frames_per_image
-            foreground = foregrounds[image_index]
-
-            image_frame_index = frame_count % frames_per_image
+        if current_image_frame_count < current_image_frames:
+            foreground = foregrounds[current_image_index]
             scale_factor = (
-                0.5 + (image_frame_index / (frames_per_image // 4)) * 0.5
-                if image_frame_index < frames_per_image // 4
+                0.5 + (current_image_frame_count / (current_image_frames // 4)) * 0.5
+                if current_image_frame_count < current_image_frames // 4
                 else 1.0
             )
 
             try:
                 add_transparent_image(frame, foreground, scale_factor=scale_factor)
             except Exception as e:
-                print(f"Error processing image {image_paths[image_index]}: {e}")
+                print(f"Error processing image {image_paths[current_image_index]}: {e}")
                 return
+
+            current_image_frame_count += 1
+        else:
+            current_image_index += 1
+            if current_image_index >= total_images:
+                break
+            current_image_duration = image_durations[current_image_index]
+            current_image_frames = int(current_image_duration * fps)
+            current_image_frame_count = 0
 
         out.write(frame)
         frame_count += 1
@@ -114,6 +122,7 @@ def extract_number(filename):
     match = re.search(r"\d+", filename)
     return int(match.group()) if match else 0
 
+
 def calculate_subtitle_durations(audio_duration, all_script_words_list):
     total_chars = sum(len(word) for word in all_script_words_list)
     durations = []
@@ -122,7 +131,7 @@ def calculate_subtitle_durations(audio_duration, all_script_words_list):
         word_length = len(word)
         word_duration = (word_length / total_chars) * audio_duration
         durations.append(word_duration)
-    
+
     return durations
 
 
@@ -147,12 +156,14 @@ def process_final_video(
         key=extract_number,
     )
 
-
     audio_clip = AudioFileClip("audios/audio1.mp3")
     target_duration = audio_clip.duration
-    duration_per_image = (audio_clip.duration - 0.01) / len(image_paths)
+    all_script_words_list = process_text(arabic_text)
+    image_durations = calculate_subtitle_durations(
+        audio_clip.duration, all_script_words_list
+    )
 
     process_video_with_images(
-        video_path, image_paths, output_path, target_duration, duration_per_image
+        video_path, image_paths, output_path, target_duration, image_durations
     )
     add_voice_to_video(output_path, "audios/audio1.mp3", final_output_path)

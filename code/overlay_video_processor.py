@@ -6,7 +6,7 @@ def overlay_video(
     background_video_path,
     overlay_video_path,
     output_path,
-    scale_factor=1.0,
+    scale_factor,
     overlay_start_time=0,
     bottom_margin=0,
     green_screen_color=[0, 255, 0],  # Default green color
@@ -30,7 +30,7 @@ def overlay_video(
     bottom_y_position = video_height - overlay_height - bottom_margin
 
     # Position the overlay video at the center bottom with a margin
-    overlay_clip = overlay_clip.set_position(("center", bottom_y_position))
+    overlay_clip = overlay_clip.set_position(("center", "center"))
 
     # Set when the overlay video should start
     overlay_clip = overlay_clip.set_start(overlay_start_time)
@@ -51,4 +51,3 @@ overlay_video_path = (
 )
 
 output_video = "results/output_overlay.mp4"
-
