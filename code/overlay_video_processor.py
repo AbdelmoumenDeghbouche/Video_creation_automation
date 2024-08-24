@@ -6,10 +6,12 @@ def overlay_video(
     background_video_path,
     overlay_video_path,
     output_path,
-    scale_factor,
+    scale_factor=1.0,
     overlay_start_time=0,
     bottom_margin=0,
     green_screen_color=[0, 255, 0],  # Default green color
+    duration=None,  # Duration for which the overlay stays
+    position="center",  # Position of the overlay
 ):
     # Load the background video
     background_clip = VideoFileClip(background_video_path)
@@ -24,13 +26,18 @@ def overlay_video(
     # Remove the green screen (chroma keying) from the overlay
     overlay_clip = overlay_clip.fx(mask_color, color=green_screen_color, thr=100, s=5)
 
+    # Apply the duration to the overlay clip if provided
+    if duration:
+        overlay_clip = overlay_clip.set_duration(duration)
+
     # Calculate the position (center horizontally, bottom with margin vertically)
     video_height = background_clip.h
     overlay_height = overlay_clip.h
-    bottom_y_position = video_height - overlay_height - bottom_margin
+    if position == "bottom":
+        position = video_height - overlay_height - bottom_margin
 
     # Position the overlay video at the center bottom with a margin
-    overlay_clip = overlay_clip.set_position(("center", "center"))
+    overlay_clip = overlay_clip.set_position(("center", position))
 
     # Set when the overlay video should start
     overlay_clip = overlay_clip.set_start(overlay_start_time)
@@ -40,14 +47,3 @@ def overlay_video(
 
     # Write the result to a file
     composite_clip.write_videofile(output_path, codec="libx264", audio_codec="aac")
-
-
-# Example usage:
-background_video = (
-    "videos/Subway/videos/SPIDERMAN INTO SPIDERVERSE 4K LIVE WALLPAPER..mp4"
-)
-overlay_video_path = (
-    "videos/assets/no_bg_assets/Green Screen/Caught-in-4K-(Green-Screen).mp4"
-)
-
-output_video = "results/output_overlay.mp4"
