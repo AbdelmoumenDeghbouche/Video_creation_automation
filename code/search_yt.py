@@ -1,8 +1,7 @@
 from youtubesearchpython import VideosSearch
-from download_yt import download_video
-from download_mp3 import download_audio
 
-def get_first_video_under_x_seconds(search_query,video_length):
+
+def get_first_video_under_x_seconds(search_query, video_length):
     try:
         # Create a VideosSearch object with the search query, setting a higher limit to search multiple videos
         search = VideosSearch(search_query, limit=10)
@@ -28,3 +27,4 @@ def get_first_video_under_x_seconds(search_query,video_length):
 
     except Exception as e:
         return f"An error occurred: {str(e)}"
+
