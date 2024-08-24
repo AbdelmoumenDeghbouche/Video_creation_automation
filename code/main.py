@@ -28,6 +28,7 @@ class TextRequest(BaseModel):
     eleven_labs_api_key: str
     ngrok_auth_token: str
 
+
 @app.post("/generate-video/")
 async def generate_video(request: TextRequest):
     arabic_text = request.arabic_text
@@ -39,6 +40,7 @@ async def generate_video(request: TextRequest):
         logging.info(
             f"Received request with text: {arabic_text} and background folder: {background_video_folder}"
         )
+
         if is_url(background_video_folder):
             # Download the video from the URL
             video_link = background_video_folder
@@ -50,7 +52,6 @@ async def generate_video(request: TextRequest):
                 15,
             )
             selected_video_path = "videos/other/background_downloaded_video_cutten.mp4"
-
         else:
             # Get the path to the background video folder
             video_folder_path = f"videos/{background_video_folder}/videos"
@@ -76,7 +77,7 @@ async def generate_video(request: TextRequest):
 
         # Step 1: Generate AI audio, Split, and crop the selected random video
         logging.info("Starting video processing...")
-        generate_ai_voice(arabic_text, eleven_labs_api_key)
+        # generate_ai_voice(arabic_text, eleven_labs_api_key)
         process_video(selected_video_path, f"videos/{background_video_folder}/clips")
 
         # Step 2: Generate images from text
