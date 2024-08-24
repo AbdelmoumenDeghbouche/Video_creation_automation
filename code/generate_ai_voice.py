@@ -2,11 +2,12 @@ import requests
 import os
 import random
 
-XI_API_KEY = "sk_dd9bd2cd63cb05c15efb1862d4cd1c3c0d7070216f76228a"
+# XI_API_KEY = "sk_dd9bd2cd63cb05c15efb1862d4cd1c3c0d7070216f76228a"
 BASE_URL = "https://api.elevenlabs.io/v1"
 
 
-def generate_ai_voice(arabic_text):
+def generate_ai_voice(arabic_text, eleven_labs_api_key):
+    XI_API_KEY = eleven_labs_api_key
     audio_folder = "audios/"
     for file_name in os.listdir(audio_folder):
         file_path = os.path.join(audio_folder, file_name)

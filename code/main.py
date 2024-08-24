@@ -25,12 +25,15 @@ app = FastAPI()
 class TextRequest(BaseModel):
     arabic_text: str
     background_video: str
-
+    eleven_labs_api_key: str
+    ngrok_auth_token: str
 
 @app.post("/generate-video/")
 async def generate_video(request: TextRequest):
     arabic_text = request.arabic_text
     background_video_folder = request.background_video
+    eleven_labs_api_key = request.eleven_labs_api_key
+    ngrok_auth_token = request.ngrok_auth_token
 
     try:
         logging.info(
@@ -73,6 +76,7 @@ async def generate_video(request: TextRequest):
 
         # Step 1: Generate AI audio, Split, and crop the selected random video
         logging.info("Starting video processing...")
+        generate_ai_voice(arabic_text, eleven_labs_api_key)
         process_video(selected_video_path, f"videos/{background_video_folder}/clips")
 
         # Step 2: Generate images from text
