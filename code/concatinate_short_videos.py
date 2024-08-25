@@ -21,3 +21,4 @@ def concatenate_random_order_videos(background_video_type):
             video_files.append(f"videos/{background_video_type}/videos/video{i}.mp4")
 
     concatenate_videos_in_random_order(video_files, output_video)
+    return output_video

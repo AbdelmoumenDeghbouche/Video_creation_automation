@@ -9,6 +9,7 @@ from utils import is_url
 from search_yt import get_first_video_under_x_seconds
 from download_yt import download_video
 from video_utils import cut_video
+from concatinate_short_videos import concatenate_random_order_videos
 import os
 import random
 import logging
@@ -53,26 +54,11 @@ async def generate_video(request: TextRequest):
             )
             selected_video_path = "videos/other/background_downloaded_video_cutten.mp4"
         else:
-            # Get the path to the background video folder
-            video_folder_path = f"videos/{background_video_folder}/videos"
-            logging.info(f"Looking for videos in folder: {video_folder_path}")
-
-            # List all video files in the folder
-            video_files = [
-                f
-                for f in os.listdir(video_folder_path)
-                if f.endswith((".mp4", ".avi", ".mkv"))
-            ]
-            logging.info(f"Found video files: {video_files}")
-
-            if not video_files:
-                raise HTTPException(
-                    status_code=404, detail="No videos found in the specified folder"
-                )
-
             # Choose a random video
-            selected_video = random.choice(video_files)
-            selected_video_path = os.path.join(video_folder_path, selected_video)
+
+            selected_video_path = concatenate_random_order_videos(
+                background_video_folder
+            )
             logging.info(f"Selected video: {selected_video_path}")
 
         # Step 1: Generate AI audio, Split, and crop the selected random video
