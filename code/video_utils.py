@@ -6,8 +6,11 @@ from download_mp3 import download_audio
 from translator_ar_en import translate_arabic_to_english
 from overlay_video_processor import overlay_video
 from add_sound_to_video import add_sound_to_video
+import random
+from moviepy.editor import VideoFileClip, concatenate_videoclips
 
 overlay_and_sound_duration = 4
+
 
 def cut_video(input_path, output_path, start_cut, end_cut):
     # Load the video file
@@ -29,6 +32,7 @@ def cut_video(input_path, output_path, start_cut, end_cut):
     # Close the video files
     video.close()
     trimmed_video.close()
+
 
 def add_green_screen(arabic_green_screen_text_search, start_time):
     translated_text = translate_arabic_to_english(arabic_green_screen_text_search)
@@ -57,3 +61,33 @@ def add_green_screen(arabic_green_screen_text_search, start_time):
         duration=overlay_and_sound_duration,  # Play the sound for 10 seconds (optional)
         volume_level=30,  # Set the volume to 30% (optional)
     )
+
+
+
+
+
+def concatenate_videos_in_random_order(video_files, output_file):
+    # Load all video clips
+    video_clips = [VideoFileClip(f) for f in video_files]
+
+    # Get the resolution and frame rate of the first video
+    target_resolution = video_clips[0].size
+    target_fps = video_clips[0].fps
+
+    # Resize and set the frame rate of all video clips to match the first video
+    video_clips = [
+        clip.resize(newsize=target_resolution).set_fps(target_fps) for clip in video_clips
+    ]
+
+    # Shuffle the list of video clips to randomize the order
+    random.shuffle(video_clips)
+
+    # Concatenate the video clips
+    final_clip = concatenate_videoclips(video_clips)
+
+    # Write the output video file
+    final_clip.write_videofile(output_file)
+
+    # Close the clips to release resources
+    for clip in video_clips:
+        clip.close()
