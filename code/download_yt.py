@@ -21,7 +21,3 @@ def download_video(video_url, output_path, new_filename="new_video"):
 
     except Exception as e:
         print(f"An error occurred: {str(e)}")
-
-
-# Example usage
-# download_video('https://www.youtube.com/watch?v=example', '/path/to/save/video', 'new_video_name')

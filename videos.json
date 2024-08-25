@@ -1,0 +1,174 @@
+{
+  "cleaning": {
+    "videos": [
+      {
+        "url": "https://www.youtube.com/watch?v=pAdiH7UxWTQ&pp=ygUNY2xlYW5pbmcgYXNtcg%3D%3D",
+        "type": "long"
+      },
+      {
+        "url": "https://www.youtube.com/watch?v=HIe7WSdfW7E&pp=ygUOY2xlYW5pbmcgdmlkZW8%3D",
+        "type": "long"
+      },
+      {
+        "url": "https://www.youtube.com/shorts/WdQJVtSf9Kg",
+        "type": "short"
+      },
+      {
+        "url": "https://www.youtube.com/shorts/bTk75WUV_OA",
+        "type": "short"
+      },
+      {
+        "url": "https://www.youtube.com/shorts/u9fPtsBCmCc",
+        "type": "short"
+      },
+      {
+        "url": "https://www.youtube.com/shorts/60oo5pOQgUs",
+        "type": "short"
+      },
+      {
+        "url": "https://www.youtube.com/shorts/H29TceQXPQw",
+        "type": "short"
+      }
+    ]
+  },
+  "subway": {
+    "videos": [
+      {
+        "url": "https://www.youtube.com/shorts/z6HcJO3E4Rw",
+        "type": "short"
+      },
+      {
+        "url": "https://www.youtube.com/shorts/FPEr3G1cD0A",
+        "type": "short"
+      },
+      {
+        "url": "https://www.youtube.com/shorts/zQWvHu6beYo",
+        "type": "short"
+      },
+      {
+        "url": "https://www.youtube.com/shorts/QdfKM9e6z8c",
+        "type": "short"
+      },
+      {
+        "url": "https://www.youtube.com/shorts/P0CRsNJkKyg",
+        "type": "short"
+      },
+      {
+        "url": "https://www.youtube.com/shorts/qU_piAAh2uI",
+        "type": "short"
+      },
+      {
+        "url": "https://www.youtube.com/watch?v=hD7R3E_6ir8&pp=ygUIY2xlYW5pbmc%3D",
+        "type": "long"
+      }
+    ]
+  },
+  "minecraft": {
+    "videos": [
+      {
+        "url": "https://www.youtube.com/shorts/10dAUhVSXtw",
+        "type": "short"
+      },
+      {
+        "url": "https://www.youtube.com/shorts/UxGL4QhTITg",
+        "type": "short"
+      },
+      {
+        "url": "https://www.youtube.com/shorts/fjqrsJ7zVfA",
+        "type": "short"
+      },
+      {
+        "url": "https://www.youtube.com/shorts/jce7Fp-FV3k",
+        "type": "short"
+      },
+      {
+        "url": "https://www.youtube.com/shorts/szJLjCrPkiQ",
+        "type": "short"
+      },
+      {
+        "url": "https://www.youtube.com/shorts/SA3Oxcr7JkU",
+        "type": "short"
+      }
+    ]
+  },
+  "cooking": {
+    "videos": [
+      {
+        "url": "video10",
+        "type": "short"
+      },
+      {
+        "url": "video11",
+        "type": "short"
+      },
+      {
+        "url": "video12",
+        "type": "short"
+      }
+    ]
+  },
+  "gaming": {
+    "videos": [
+      {
+        "url": "video13",
+        "type": "short"
+      },
+      {
+        "url": "video14",
+        "type": "short"
+      },
+      {
+        "url": "video15",
+        "type": "short"
+      }
+    ]
+  },
+  "mobile_games": {
+    "videos": [
+      {
+        "url": "video16",
+        "type": "short"
+      },
+      {
+        "url": "video17",
+        "type": "short"
+      },
+      {
+        "url": "video18",
+        "type": "short"
+      }
+    ]
+  },
+  "life_hacks": {
+    "videos": [
+      {
+        "url": "video19",
+        "type": "short"
+      },
+      {
+        "url": "video20",
+        "type": "short"
+      },
+      {
+        "url": "video21",
+        "type": "short"
+      }
+    ]
+  },
+  "gtav": {
+    "videos": [
+      {
+        "url": "video22",
+        "type": "short"
+      },
+      {
+        "url": "video23",
+        "type": "short"
+      },
+      {
+        "url": "video24",
+        "type": "short"
+      }
+    ]
+  }
+}
