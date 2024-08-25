@@ -26,8 +26,8 @@ app = FastAPI()
 class TextRequest(BaseModel):
     arabic_text: str
     background_video: str
-    eleven_labs_api_key: str
-    ngrok_auth_token: str
+    # eleven_labs_api_key: str
+    # ngrok_auth_token: str
 
 
 @app.post("/generate-video/")
@@ -38,8 +38,8 @@ async def generate_video(
 ):
     arabic_text = request.arabic_text
     background_video_folder = request.background_video
-    eleven_labs_api_key = request.eleven_labs_api_key
-    ngrok_auth_token = request.ngrok_auth_token
+    # eleven_labs_api_key = request.eleven_labs_api_key
+    # ngrok_auth_token = request.ngrok_auth_token
 
     try:
         logging.info(
@@ -77,11 +77,24 @@ async def generate_video(
             f"Generating images for text: {arabic_text} in folder: {images_folder}"
         )
         if not arabic_font_file:
-
-            generate_images_from_text(arabic_text, images_folder)
+            if not font_size:
+                generate_images_from_text(arabic_text, images_folder)
+            else:
+                generate_images_from_text(
+                    arabic_text, images_folder, font_size=font_size
+                )
         else:
-            generate_images_from_text(arabic_text, images_folder, arabic_font_file=arabic_font_file)
-
+            if not font_size:
+                generate_images_from_text(
+                    arabic_text, images_folder, arabic_font_file=arabic_font_file
+                )
+            else:
+                generate_images_from_text(
+                    arabic_text,
+                    images_folder,
+                    arabic_font_file=arabic_font_file,
+                    font_size=font_size,
+                )
         # Step 3: Process final video with images and audio
         video_path = f"videos/{background_video_folder}/clips/ready_clip.mp4"
         output_path = "results/output.mp4"

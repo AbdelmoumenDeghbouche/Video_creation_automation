@@ -48,6 +48,7 @@ def generate_images(
     arabic_font="assets/fonts/18728-arabicmodern-bold.otf",
     english_font="assets/fonts/arialbd.ttf",
     emoji_font="assets/fonts/NotoColorEmoji-Regular.ttf",
+    font_size=125,
 ):
     global zoba_image_index  # Declare global variable to be modified inside the function
 
@@ -73,7 +74,7 @@ def generate_images(
                     if is_arabic(text)
                     else english_font if is_english(text) else emoji_font
                 )
-                draw.font_size = 125
+                draw.font_size = font_size
 
                 color = colors[index % len(colors)]
                 text_width, text_height = get_text_size(draw, text)
@@ -112,7 +113,10 @@ def generate_images_from_text(
     arabic_text,
     images_folder,
     arabic_font_file="assets/fonts/18728-arabicmodern-bold.otf",
+    font_size=125,
 ):
     clear_images_folder(images_folder)
     words_list = process_text(arabic_text)
-    generate_images(words_list, images_folder, arabic_font=arabic_font_file)
+    generate_images(
+        words_list, images_folder, arabic_font=arabic_font_file, font_size=font_size
+    )
