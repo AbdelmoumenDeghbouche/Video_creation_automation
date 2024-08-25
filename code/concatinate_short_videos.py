@@ -5,7 +5,7 @@ from download_yt import download_video
 
 def concatenate_random_order_videos(background_video_type):
     video_files = []
-    output_video = "videos/subway/videos/output_random_orders.mp4"
+    output_video = f"videos/{background_video_type}/videos/output_random_orders.mp4"
     # Assuming the JSON data is stored in a file called 'data.json'
     with open("videos.json") as json_file:
         data = json.load(json_file)
@@ -15,7 +15,9 @@ def concatenate_random_order_videos(background_video_type):
         url = data[background_video_type]["videos"][i]["url"]
         video_type = data[background_video_type]["videos"][i]["type"]
         if video_type == "short":
-            download_video(url, "videos/subway/videos", f"video{i}.mp4")
-            video_files.append(f"videos/subway/videos/video{i}.mp4")
+            download_video(
+                url, f"videos/{background_video_type}/videos", f"video{i}.mp4"
+            )
+            video_files.append(f"videos/{background_video_type}/videos/video{i}.mp4")
 
     concatenate_videos_in_random_order(video_files, output_video)
