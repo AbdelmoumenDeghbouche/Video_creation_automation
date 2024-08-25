@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Depends
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from video_splitter import process_video
@@ -10,8 +10,8 @@ from search_yt import get_first_video_under_x_seconds
 from download_yt import download_video
 from video_utils import cut_video
 from concatinate_short_videos import concatenate_random_order_videos
+from typing import Optional
 import os
-import random
 import logging
 import traceback
 
@@ -31,7 +31,11 @@ class TextRequest(BaseModel):
 
 
 @app.post("/generate-video/")
-async def generate_video(request: TextRequest):
+async def generate_video(
+    request: TextRequest = Depends(),
+    arabic_font_file: UploadFile = File(None),
+    font_size: Optional[int] = Form(None),
+):
     arabic_text = request.arabic_text
     background_video_folder = request.background_video
     eleven_labs_api_key = request.eleven_labs_api_key
@@ -46,6 +50,7 @@ async def generate_video(request: TextRequest):
             # Download the video from the URL
             video_link = background_video_folder
             download_video(video_link, "videos/other", "background_downloaded_video")
+            selected_video_path = "videos/other/background_downloaded_video.mp4"
             cut_video(
                 selected_video_path,
                 "videos/other/background_downloaded_video_cutten.mp4",
@@ -55,7 +60,6 @@ async def generate_video(request: TextRequest):
             selected_video_path = "videos/other/background_downloaded_video_cutten.mp4"
         else:
             # Choose a random video
-
             selected_video_path = concatenate_random_order_videos(
                 background_video_folder
             )
@@ -63,6 +67,7 @@ async def generate_video(request: TextRequest):
 
         # Step 1: Generate AI audio, Split, and crop the selected random video
         logging.info("Starting video processing...")
+        # Uncomment if needed
         # generate_ai_voice(arabic_text, eleven_labs_api_key)
         process_video(selected_video_path, f"videos/{background_video_folder}/clips")
 
@@ -71,7 +76,11 @@ async def generate_video(request: TextRequest):
         logging.info(
             f"Generating images for text: {arabic_text} in folder: {images_folder}"
         )
-        generate_images_from_text(arabic_text, images_folder)
+        if not arabic_font_file:
+
+            generate_images_from_text(arabic_text, images_folder)
+        else:
+            generate_images_from_text(arabic_text, images_folder, arabic_font_file=arabic_font_file)
 
         # Step 3: Process final video with images and audio
         video_path = f"videos/{background_video_folder}/clips/ready_clip.mp4"

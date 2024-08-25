@@ -16,6 +16,7 @@ from text_utils import (
 # Global variable to store the index of the "zoba" image
 zoba_image_index = None
 
+
 def clear_images_folder(folder_path):
     for filename in os.listdir(folder_path):
         file_path = os.path.join(folder_path, filename)
@@ -27,8 +28,10 @@ def clear_images_folder(folder_path):
         except Exception as e:
             print(f"Failed to delete {file_path}. Reason: {e}")
 
+
 def separate_linked_arabic_english(text):
-    return re.sub(r'([ا-ي]+)([a-zA-Z]+)|([a-zA-Z]+)([ا-ي]+)', r'\1\3 \2\4', text)
+    return re.sub(r"([ا-ي]+)([a-zA-Z]+)|([a-zA-Z]+)([ا-ي]+)", r"\1\3 \2\4", text)
+
 
 def process_text(text):
     preprocessed_text = preprocess_text(text)
@@ -38,7 +41,14 @@ def process_text(text):
     text_without_punctuation = re.sub(pattern, "", separated_text)
     return text_without_punctuation.split()
 
-def generate_images(words_list, images_folder):
+
+def generate_images(
+    words_list,
+    images_folder,
+    arabic_font="assets/fonts/18728-arabicmodern-bold.otf",
+    english_font="assets/fonts/arialbd.ttf",
+    emoji_font="assets/fonts/NotoColorEmoji-Regular.ttf",
+):
     global zoba_image_index  # Declare global variable to be modified inside the function
 
     colors = ["#FDFA54", "#72F459", "white"]
@@ -47,20 +57,22 @@ def generate_images(words_list, images_folder):
     shadow_color = "rgba(0, 0, 0, 0.5)"
     shadow_offset = (10, 10)
 
-    english_font = "E:/arialbd.ttf"
-    arabic_font = "E:/18728-arabicmodern-bold.otf"
-    emoji_font = "E:/Noto_Color_Emoji/NotoColorEmoji-Regular.ttf"
-
     for index, text in enumerate(words_list):
         if contains_emoji(text):
             emoji_image = download_emoji_image(text)
-            create_centered_image(emoji_image, f"{images_folder}/test_output_{index}.png")
+            create_centered_image(
+                emoji_image, f"{images_folder}/test_output_{index}.png"
+            )
             print(f"Emoji image saved for {text}")
             continue
 
         with Image(width=1080, height=1920, background=Color("transparent")) as img:
             with Drawing() as draw:
-                draw.font = arabic_font if is_arabic(text) else english_font if is_english(text) else emoji_font
+                draw.font = (
+                    arabic_font
+                    if is_arabic(text)
+                    else english_font if is_english(text) else emoji_font
+                )
                 draw.font_size = 125
 
                 color = colors[index % len(colors)]
@@ -80,7 +92,9 @@ def generate_images(words_list, images_folder):
                 draw.text(x=x, y=y, body=text)
 
                 # Draw text
-                draw.fill_color = Color(color) if not contains_emoji(text) else Color("transparent")
+                draw.fill_color = (
+                    Color(color) if not contains_emoji(text) else Color("transparent")
+                )
                 draw.stroke_color = Color("transparent")
                 draw.text(x=x, y=y, body=text)
                 draw(img)
@@ -93,7 +107,12 @@ def generate_images(words_list, images_folder):
                 zoba_image_index = index
                 print(f"'zoba' word found at index: {zoba_image_index}")
 
-def generate_images_from_text(arabic_text, images_folder):
+
+def generate_images_from_text(
+    arabic_text,
+    images_folder,
+    arabic_font_file="assets/fonts/18728-arabicmodern-bold.otf",
+):
     clear_images_folder(images_folder)
     words_list = process_text(arabic_text)
-    generate_images(words_list, images_folder)
+    generate_images(words_list, images_folder, arabic_font=arabic_font_file)
