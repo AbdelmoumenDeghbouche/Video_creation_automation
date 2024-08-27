@@ -12,9 +12,11 @@ from text_utils import (
     is_arabic,
     contains_emoji,
 )
+from emoji_utils import words_list_final
 
 # Global variable to store the index of the "zoba" image
 zoba_image_index = None
+new_word_list = []
 
 
 def clear_images_folder(folder_path):
@@ -116,7 +118,7 @@ def generate_images_from_text(
     font_size=125,
 ):
     clear_images_folder(images_folder)
-    words_list = process_text(arabic_text)
+    words_list = words_list_final
     generate_images(
         words_list, images_folder, arabic_font=arabic_font_file, font_size=font_size
     )

@@ -10,11 +10,14 @@ from search_yt import get_first_video_under_x_seconds
 from download_yt import download_video
 from video_utils import cut_video
 from concatinate_short_videos import concatenate_random_order_videos
+from c2a_overlay import add_c2a_overlay
 from typing import Optional
+from utils import clear_files_folder
 import os
 import logging
 import traceback
 
+arabic_text = None
 # Set up logging
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -46,6 +49,7 @@ async def generate_video(
             f"Received request with text: {arabic_text} and background folder: {background_video_folder}"
         )
 
+        clear_files_folder("results")
         if is_url(background_video_folder):
             # Download the video from the URL
             video_link = background_video_folder
@@ -103,17 +107,18 @@ async def generate_video(
         process_final_video(
             video_path, images_folder, output_path, final_output_path, arabic_text
         )
-
+        # adding c2a overlay
+        add_c2a_overlay(arabic_text=arabic_text)
         # Check if the file exists
         if not os.path.exists(final_output_path):
             logging.error("Final video file does not exist after processing")
             raise HTTPException(status_code=500, detail="Video creation failed")
-
+        final_output_path = "results/output_overlay.mp4"
         logging.info(f"Video successfully created: {final_output_path}")
 
         # Return the video file as a response
         return FileResponse(
-            final_output_path, media_type="video/mp4", filename="output_with_audio.mp4"
+            final_output_path, media_type="video/mp4", filename="output_overlay.mp4"
         )
 
     except Exception as e:
