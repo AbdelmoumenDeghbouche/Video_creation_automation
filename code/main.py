@@ -62,6 +62,7 @@ async def generate_video(
                 15,
             )
             selected_video_path = "videos/other/background_downloaded_video_cutten.mp4"
+            background_video_folder = "other"
         else:
             # Choose a random video
             selected_video_path = concatenate_random_order_videos(

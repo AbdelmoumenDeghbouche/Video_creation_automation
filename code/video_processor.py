@@ -5,6 +5,7 @@ import numpy as np
 from moviepy.editor import VideoFileClip, AudioFileClip
 from image_generator import process_text
 
+
 def add_transparent_image(
     background, foreground, x_offset=None, y_offset=None, scale_factor=1.0
 ):
@@ -71,91 +72,78 @@ def process_video_with_images(
 ):
     """
     Process a video by adding images on top of each frame.
-
-    Args:
-        video_path (str): Path to the input video file.
-        image_paths (list): List of paths to the image files.
-        output_path (str): Path to the output video file.
-        target_duration (float): Target duration of the output video.
-        image_durations (list): Durations of each image in seconds.
     """
-    # Open the video file
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         print(f"Error: Could not open video file {video_path}")
         return
 
-    # Get the frame dimensions, FPS, and original duration of the video
     frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fps = cap.get(cv2.CAP_PROP_FPS)
-    original_duration = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) / fps
 
-    # Calculate the total number of frames to process
-    total_frames = int(min(original_duration, target_duration) * fps)
+    total_frames = int(target_duration * fps)
     total_images = len(image_paths)
 
-    # Create a VideoWriter object to write the output video
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
     out = cv2.VideoWriter(output_path, fourcc, fps, (frame_width, frame_height))
 
-    # Load the foreground images
     foregrounds = [
         cv2.imread(image_path, cv2.IMREAD_UNCHANGED) for image_path in image_paths
     ]
 
-    # Check if the foreground images have an alpha channel
     for fg in foregrounds:
         if fg is None or fg.shape[-1] != 4:
             print(f"Error: Image file does not have an alpha channel (RGBA)")
             return
 
-    # Initialize variables for frame processing
     frame_count = 0
     current_image_index = 0
-    current_image_frame_count = 0
-    current_image_duration = image_durations[current_image_index]
-    current_image_frames = int(current_image_duration * fps)
+    current_image_start_time = 0
 
-    # Process each frame of the video
     while cap.isOpened() and frame_count < total_frames:
         ret, frame = cap.read()
         if not ret:
             break
 
-        # Add the current image on top of the frame
-        if current_image_frame_count < current_image_frames:
-            foreground = foregrounds[current_image_index]
-            scale_factor = (
-                0.5 + (current_image_frame_count / (current_image_frames // 4)) * 0.5
-                if current_image_frame_count < current_image_frames // 4
-                else 1.0
+        current_time = frame_count / fps
+
+        # Check if it's time to switch to the next image
+        if current_image_index < total_images:
+            current_image_end_time = (
+                current_image_start_time + image_durations[current_image_index]
             )
 
-            try:
-                add_transparent_image(frame, foreground, scale_factor=scale_factor)
-            except Exception as e:
-                print(f"Error processing image {image_paths[current_image_index]}: {e}")
-                return
+            if current_time >= current_image_end_time:
+                current_image_index += 1
+                current_image_start_time = current_image_end_time
 
-            current_image_frame_count += 1
-        else:
-            # Move to the next image if the current image is fully displayed
-            current_image_index += 1
-            if current_image_index >= total_images:
-                break
-            current_image_duration = image_durations[current_image_index]
-            current_image_frames = int(current_image_duration * fps)
-            current_image_frame_count = 0
+            if current_image_index < total_images:
+                foreground = foregrounds[current_image_index]
+                progress = (current_time - current_image_start_time) / image_durations[
+                    current_image_index
+                ]
+                scale_factor = min(1.0, 0.5 + progress * 0.5)
 
-        # Write the frame to the output video
+                try:
+                    add_transparent_image(frame, foreground, scale_factor=scale_factor)
+                except Exception as e:
+                    print(
+                        f"Error processing image {image_paths[current_image_index]}: {e}"
+                    )
+                    return
+
         out.write(frame)
         frame_count += 1
 
-    # Release the video capture and writer objects
     cap.release()
     out.release()
     cv2.destroyAllWindows()
+
+    print(f"Processed {frame_count} frames. Last image index: {current_image_index}")
+    print(f"Total images: {total_images}")
+    print(f"Total duration processed: {frame_count / fps} seconds")
+    print(f"Target duration: {target_duration} seconds")
 
 
 def extract_number(filename):
