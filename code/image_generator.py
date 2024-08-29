@@ -50,15 +50,16 @@ def generate_images(
     arabic_font="assets/fonts/18728-arabicmodern-bold.otf",
     english_font="assets/fonts/arialbd.ttf",
     emoji_font="assets/fonts/NotoColorEmoji-Regular.ttf",
-    font_size=125,
+    font_size=175,
 ):
-    global zoba_image_index  # Declare global variable to be modified inside the function
+    global zoba_image_index
 
     colors = ["#FDFA54", "#72F459", "white"]
     outline_color = "black"
     outline_thickness = 23
-    shadow_color = "rgba(0, 0, 0, 0.5)"
-    shadow_offset = (10, 10)
+    shadow_color = "rgba(0, 0, 0, 1.5)"
+    shadow_offset = (30, 20)  # Increased offset for more noticeable shadow
+    shadow_blur = 10  # Added blur to soften the shadow
 
     for index, text in enumerate(words_list):
         if contains_emoji(text):
@@ -84,9 +85,16 @@ def generate_images(
                 y = int((img.height + text_height)) // 2
 
                 # Draw shadow
-                draw.fill_color = Color(shadow_color)
-                draw.stroke_color = Color("transparent")
-                draw.text(x=x + shadow_offset[0], y=y + shadow_offset[1], body=text)
+                with img.clone() as shadow:
+                    with Drawing() as shadow_draw:
+                        shadow_draw.font = draw.font
+                        shadow_draw.font_size = font_size
+                        shadow_draw.fill_color = Color(shadow_color)
+                        shadow_draw.stroke_color = Color("transparent")
+                        shadow_draw.text(x=x, y=y, body=text)
+                        shadow_draw(shadow)
+                    shadow.blur(sigma=shadow_blur)
+                    img.composite(shadow, left=shadow_offset[0], top=shadow_offset[1])
 
                 # Draw outline
                 draw.fill_color = Color("transparent")
@@ -105,7 +113,6 @@ def generate_images(
             img.save(filename=f"{images_folder}/test_output_{index}.png")
             print(f"Text image saved for {text}")
 
-            # Check if the word "zoba" is present and store the index
             if text == "zoba":
                 zoba_image_index = index
                 print(f"'zoba' word found at index: {zoba_image_index}")
@@ -115,7 +122,7 @@ def generate_images_from_text(
     arabic_text,
     images_folder,
     arabic_font_file="assets/fonts/18728-arabicmodern-bold.otf",
-    font_size=125,
+    font_size=175,
 ):
     clear_images_folder(images_folder)
     words_list = words_list_final

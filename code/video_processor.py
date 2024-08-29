@@ -4,74 +4,92 @@ import cv2
 import numpy as np
 from moviepy.editor import VideoFileClip, AudioFileClip
 from image_generator import process_text
+from blur_video import apply_beautiful_blur
 
 
-def add_transparent_image(
-    background, foreground, x_offset=None, y_offset=None, scale_factor=1.0
+def add_animated_image(
+    background,
+    foreground,
+    current_time,
+    start_time,
+    duration,
+    x_offset=None,
+    y_offset=None,
 ):
     """
-    Add a transparent image on top of a background image.
+    Add an animated image on top of a background image with a pop-in entrance animation.
 
     Args:
         background (numpy.ndarray): Background image.
         foreground (numpy.ndarray): Foreground image with alpha channel.
-        x_offset (int, optional): X-axis offset for the foreground image. Defaults to None.
-        y_offset (int, optional): Y-axis offset for the foreground image. Defaults to None.
-        scale_factor (float, optional): Scale factor for the foreground image. Defaults to 1.0.
+        current_time (float): Current time in the video.
+        start_time (float): Start time of the current image.
+        duration (float): Duration of the current image.
+        x_offset (int, optional): Initial X-axis offset for the foreground image.
+        y_offset (int, optional): Initial Y-axis offset for the foreground image.
     """
-    # Get dimensions of background and foreground images
-    bg_h, bg_w, bg_channels = background.shape
-    fg_h, fg_w, fg_channels = foreground.shape
+    bg_h, bg_w = background.shape[:2]
+    fg_h, fg_w = foreground.shape[:2]
 
-    # Check if the number of channels is correct
-    assert (
-        bg_channels == 3
-    ), f"Background image should have exactly 3 channels (RGB). Found: {bg_channels}"
-    assert (
-        fg_channels == 4
-    ), f"Foreground image should have exactly 4 channels (RGBA). Found: {fg_channels}"
+    # Calculate progress (0 to 1) for the current image
+    progress = (current_time - start_time) / duration
 
-    # Resize the foreground image based on the scale factor
-    new_fg_w, new_fg_h = int(fg_w * scale_factor), int(fg_h * scale_factor)
+    # Easing function for more dramatic pop-in effect
+    ease_progress = min(
+        1, 1 - (1 - min(1, progress * 3)) ** 4
+    )  # Quartic ease-out, even faster
+
+    # Scale animation (only for entrance)
+    scale_start, scale_end = 0.1, 1.2  # Start smaller, end slightly larger
+    current_scale = scale_start + (scale_end - scale_start) * ease_progress
+    new_fg_w, new_fg_h = int(fg_w * current_scale), int(fg_h * current_scale)
+
+    # Position animation
+    if x_offset is None:
+        x_offset = (bg_w - new_fg_w) // 2
+    if y_offset is None:
+        y_offset = (bg_h - new_fg_h) // 2
+
+    # Quick fade-in
+    alpha_factor = min(1, progress * 3)  # Even faster fade-in
+
+    # Resize the foreground image
     foreground_resized = cv2.resize(
-        foreground, (new_fg_w, new_fg_h), interpolation=cv2.INTER_AREA
+        foreground, (new_fg_w, new_fg_h), interpolation=cv2.INTER_LINEAR
     )
 
-    # Calculate the offsets if not provided
-    x_offset = x_offset or (bg_w - new_fg_w) // 2
-    y_offset = y_offset or (bg_h - new_fg_h) // 2
+    # Calculate the overlapping region
+    x_start = max(0, x_offset)
+    y_start = max(0, y_offset)
+    x_end = min(bg_w, x_offset + new_fg_w)
+    y_end = min(bg_h, y_offset + new_fg_h)
 
-    # Calculate the overlapping region between the foreground and background images
-    w = min(new_fg_w, bg_w, new_fg_w + x_offset, bg_w - x_offset)
-    h = min(new_fg_h, bg_h, new_fg_h + y_offset, bg_h - y_offset)
+    # If no overlap, return the background as is
+    if x_start >= x_end or y_start >= y_end:
+        return background
 
-    # If the overlapping region is invalid, return
-    if w < 1 or h < 1:
-        return
+    # Extract the overlapping regions
+    fg_region = foreground_resized[
+        y_start - y_offset : y_end - y_offset, x_start - x_offset : x_end - x_offset
+    ]
+    bg_region = background[y_start:y_end, x_start:x_end]
 
-    # Calculate the regions of interest in the foreground and background images
-    bg_x, bg_y = max(0, x_offset), max(0, y_offset)
-    fg_x, fg_y = max(0, x_offset * -1), max(0, y_offset * -1)
-    foreground_resized = foreground_resized[fg_y : fg_y + h, fg_x : fg_x + w]
-    background_subsection = background[bg_y : bg_y + h, bg_x : bg_x + w]
+    # Apply alpha blending
+    alpha = fg_region[:, :, 3] / 255.0 * alpha_factor
+    alpha = np.repeat(alpha[:, :, np.newaxis], 3, axis=2)
+    blended_region = bg_region * (1 - alpha) + fg_region[:, :, :3] * alpha
 
-    # Extract the foreground colors and alpha channel
-    foreground_colors = foreground_resized[:, :, :3]
-    alpha_channel = foreground_resized[:, :, 3] / 255.0
-    alpha_mask = np.dstack((alpha_channel, alpha_channel, alpha_channel))
+    # Place the blended region back onto the background
+    background[y_start:y_end, x_start:x_end] = blended_region
 
-    # Composite the foreground and background images
-    composite = (
-        background_subsection * (1 - alpha_mask) + foreground_colors * alpha_mask
-    )
-    background[bg_y : bg_y + h, bg_x : bg_x + w] = composite
+    return background
 
 
-def process_video_with_images(
+def process_video_with_animated_images(
     video_path, image_paths, output_path, target_duration, image_durations
 ):
     """
-    Process a video by adding images on top of each frame.
+    Process a video by adding animated images on top of each frame.
     """
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
@@ -120,18 +138,14 @@ def process_video_with_images(
 
             if current_image_index < total_images:
                 foreground = foregrounds[current_image_index]
-                progress = (current_time - current_image_start_time) / image_durations[
-                    current_image_index
-                ]
-                scale_factor = min(1.0, 0.5 + progress * 0.5)
 
-                try:
-                    add_transparent_image(frame, foreground, scale_factor=scale_factor)
-                except Exception as e:
-                    print(
-                        f"Error processing image {image_paths[current_image_index]}: {e}"
-                    )
-                    return
+                frame = add_animated_image(
+                    frame,
+                    foreground,
+                    current_time,
+                    current_image_start_time,
+                    image_durations[current_image_index],
+                )
 
         out.write(frame)
         frame_count += 1
@@ -200,7 +214,7 @@ def add_voice_to_video(video_path, audio_path, output_path):
 
 
 def process_final_video(
-    video_path, images_folder, output_path, final_output_path, arabic_text
+    video_path, images_folder, output_path, final_output_path, arabic_text, is_blur
 ):
     """
     Process the final video by adding images and voice.
@@ -229,11 +243,16 @@ def process_final_video(
     image_durations = calculate_subtitle_durations(
         audio_clip.duration, all_script_words_list
     )
-
-    # Process the video with images
-    process_video_with_images(
-        video_path, image_paths, output_path, target_duration, image_durations
-    )
+    if is_blur:
+        output_path_new = "results/processed_video_blurred.mp4"
+        apply_beautiful_blur(video_path, output_path_new, blur_strength=65)
+        process_video_with_animated_images(
+            output_path_new, image_paths, output_path, target_duration, image_durations
+        )
+    else:
+        process_video_with_animated_images(
+            video_path, image_paths, output_path, target_duration, image_durations
+        )
 
     # Add voice to the processed video
     add_voice_to_video(output_path, "audios/audio1.mp3", final_output_path)

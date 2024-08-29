@@ -13,6 +13,7 @@ from concatinate_short_videos import concatenate_random_order_videos
 from c2a_overlay import add_c2a_overlay
 from typing import Optional
 from utils import clear_files_folder
+from blur_video import apply_beautiful_blur
 import os
 import logging
 import traceback
@@ -29,6 +30,7 @@ app = FastAPI()
 class TextRequest(BaseModel):
     arabic_text: str
     background_video: str
+    blur: bool
     # eleven_labs_api_key: str
     # ngrok_auth_token: str
 
@@ -41,6 +43,7 @@ async def generate_video(
 ):
     arabic_text = request.arabic_text
     background_video_folder = request.background_video
+    is_blur = request.blur
     # eleven_labs_api_key = request.eleven_labs_api_key
     # ngrok_auth_token = request.ngrok_auth_token
 
@@ -100,13 +103,19 @@ async def generate_video(
                     arabic_font_file=arabic_font_file,
                     font_size=font_size,
                 )
-        # Step 3: Process final video with images and audio
+
+        # Step 4: Process final video with images and audio
         video_path = f"videos/{background_video_folder}/clips/ready_clip.mp4"
         output_path = "results/output.mp4"
         final_output_path = "results/output_with_audio.mp4"
         logging.info("Starting final video processing...")
         process_final_video(
-            video_path, images_folder, output_path, final_output_path, arabic_text
+            video_path,
+            images_folder,
+            output_path,
+            final_output_path,
+            arabic_text,
+            is_blur,
         )
         # adding c2a overlay
         add_c2a_overlay(arabic_text=arabic_text)
