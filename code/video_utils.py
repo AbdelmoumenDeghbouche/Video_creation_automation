@@ -8,6 +8,7 @@ from overlay_video_processor import overlay_video
 from add_sound_to_video import add_sound_to_video
 import random
 from moviepy.editor import VideoFileClip, concatenate_videoclips
+import cv2
 
 overlay_and_sound_duration = 4
 
@@ -63,9 +64,6 @@ def add_green_screen(arabic_green_screen_text_search, start_time):
     )
 
 
-
-
-
 def concatenate_videos_in_random_order(video_files, output_file):
     # Load all video clips
     video_clips = [VideoFileClip(f) for f in video_files]
@@ -76,7 +74,8 @@ def concatenate_videos_in_random_order(video_files, output_file):
 
     # Resize and set the frame rate of all video clips to match the first video
     video_clips = [
-        clip.resize(newsize=target_resolution).set_fps(target_fps) for clip in video_clips
+        clip.resize(newsize=target_resolution).set_fps(target_fps)
+        for clip in video_clips
     ]
 
     # Shuffle the list of video clips to randomize the order
@@ -91,3 +90,60 @@ def concatenate_videos_in_random_order(video_files, output_file):
     # Close the clips to release resources
     for clip in video_clips:
         clip.close()
+
+
+def speed_up_video_60_fps(input_path, output_path, target_fps=60):
+
+    # Open the input video
+    cap = cv2.VideoCapture(input_path)
+
+    # Get video properties
+    original_fps = cap.get(cv2.CAP_PROP_FPS)
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+    # Calculate the number of frames to interpolate
+    multiplier = target_fps / original_fps
+
+    # Set up the output video writer
+    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+    out = cv2.VideoWriter(output_path, fourcc, target_fps, (width, height))
+
+    # Read the first frame
+    ret, prev_frame = cap.read()
+    if not ret:
+        print("Failed to read the video")
+        return
+
+    frame_count = 0
+    while True:
+        # Read the next frame
+        ret, next_frame = cap.read()
+        if not ret:
+            break
+
+        # Write the previous frame
+        out.write(prev_frame)
+
+        # Interpolate frames
+        for i in range(1, int(multiplier)):
+            alpha = i / multiplier
+            interpolated_frame = cv2.addWeighted(
+                prev_frame, 1 - alpha, next_frame, alpha, 0
+            )
+            out.write(interpolated_frame)
+
+        prev_frame = next_frame
+        frame_count += 1
+        print(f"Processed frame {frame_count}/{total_frames}")
+
+    # Write the last frame
+    out.write(next_frame)
+
+    # Release resources
+    cap.release()
+    out.release()
+    cv2.destroyAllWindows()
+
+    print("Video interpolation completed.")
