@@ -15,6 +15,7 @@ from typing import Optional
 from utils import clear_files_folder
 from blur_video import apply_beautiful_blur
 import os
+import json
 import logging
 import traceback
 
@@ -109,12 +110,15 @@ async def generate_video(
         output_path = "results/output.mp4"
         final_output_path = "results/output_with_audio.mp4"
         logging.info("Starting final video processing...")
+        with open("zz.json", encoding="utf-8") as f:
+            timing_data = json.load(f)
+
         process_final_video(
             video_path,
             images_folder,
             output_path,
             final_output_path,
-            arabic_text,
+            timing_data,
             is_blur,
         )
         # adding c2a overlay
