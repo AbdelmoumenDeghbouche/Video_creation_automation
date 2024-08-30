@@ -46,4 +46,4 @@ def overlay_video(
     composite_clip = CompositeVideoClip([background_clip, overlay_clip])
 
     # Write the result to a file
-    composite_clip.write_videofile(output_path, codec="libx264", audio_codec="aac")
+    composite_clip.write_videofile(output_path, codec="libx264", audio_codec="aac",fps=60)

@@ -1,6 +1,7 @@
 from video_utils import concatenate_videos_in_random_order
 import json
 from download_yt import download_video
+from video_utils import speed_up_video_60_fps
 
 
 def concatenate_random_order_videos(background_video_type):
@@ -21,4 +22,8 @@ def concatenate_random_order_videos(background_video_type):
             video_files.append(f"videos/{background_video_type}/videos/video{i}.mp4")
 
     concatenate_videos_in_random_order(video_files, output_video)
-    return output_video
+    final_output_video = (
+        f"videos/{background_video_type}/videos/output_random_orders_interpolated.mp4"
+    )
+    speed_up_video_60_fps(output_video, final_output_video, 60)
+    return final_output_video

@@ -13,7 +13,7 @@ from concatinate_short_videos import concatenate_random_order_videos
 from c2a_overlay import add_c2a_overlay
 from typing import Optional
 from utils import clear_files_folder
-from blur_video import apply_beautiful_blur
+from video_utils import speed_up_video_60_fps
 import os
 import json
 import logging
@@ -58,7 +58,12 @@ async def generate_video(
             # Download the video from the URL
             video_link = background_video_folder
             download_video(video_link, "videos/other", "background_downloaded_video")
-            selected_video_path = "videos/other/background_downloaded_video.mp4"
+            speed_up_video_60_fps(
+                "videos/other/background_downloaded_video.mp4",
+                "videos/other/background_downloaded_video_interpolated.mp4",
+                60,
+            )
+            selected_video_path = "videos/other/background_downloaded_video_interpolated.mp4"
             cut_video(
                 selected_video_path,
                 "videos/other/background_downloaded_video_cutten.mp4",

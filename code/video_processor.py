@@ -141,7 +141,7 @@ def add_voice_to_video(video_path, audio_path, output_path):
     video = VideoFileClip(video_path)
     audio = AudioFileClip(audio_path)
     video = video.set_audio(audio)
-    video.write_videofile(output_path, codec="libx264", audio_codec="aac")
+    video.write_videofile(output_path, codec="libx264", audio_codec="aac", fps=60)
     video.close()
     audio.close()
 
