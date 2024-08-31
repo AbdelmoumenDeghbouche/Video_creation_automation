@@ -14,6 +14,7 @@ from c2a_overlay import add_c2a_overlay
 from typing import Optional
 from utils import clear_files_folder
 from video_utils import speed_up_video_60_fps
+from change_meta_data_dynamic import change_video_metadata_dynamic
 import os
 import json
 import logging
@@ -32,8 +33,8 @@ class TextRequest(BaseModel):
     arabic_text: str
     background_video: str
     blur: bool
-    # eleven_labs_api_key: str
-    # ngrok_auth_token: str
+    eleven_labs_api_key: str
+    ngrok_auth_token: str
 
 
 @app.post("/generate-video/")
@@ -45,8 +46,8 @@ async def generate_video(
     arabic_text = request.arabic_text
     background_video_folder = request.background_video
     is_blur = request.blur
-    # eleven_labs_api_key = request.eleven_labs_api_key
-    # ngrok_auth_token = request.ngrok_auth_token
+    eleven_labs_api_key = request.eleven_labs_api_key
+    ngrok_auth_token = request.ngrok_auth_token
 
     try:
         logging.info(
@@ -63,7 +64,9 @@ async def generate_video(
                 "videos/other/background_downloaded_video_interpolated.mp4",
                 60,
             )
-            selected_video_path = "videos/other/background_downloaded_video_interpolated.mp4"
+            selected_video_path = (
+                "videos/other/background_downloaded_video_interpolated.mp4"
+            )
             cut_video(
                 selected_video_path,
                 "videos/other/background_downloaded_video_cutten.mp4",
@@ -134,10 +137,15 @@ async def generate_video(
             raise HTTPException(status_code=500, detail="Video creation failed")
         final_output_path = "results/output_overlay.mp4"
         logging.info(f"Video successfully created: {final_output_path}")
-
+        change_video_metadata_dynamic(
+            final_output_path, "results/output_overlay_metadata.mp4"
+        )
+        final_output_path = "results/output_overlay_metadata.mp4"
         # Return the video file as a response
         return FileResponse(
-            final_output_path, media_type="video/mp4", filename="output_overlay.mp4"
+            final_output_path,
+            media_type="video/mp4",
+            filename="output_overlay_metadata.mp4",
         )
 
     except Exception as e:

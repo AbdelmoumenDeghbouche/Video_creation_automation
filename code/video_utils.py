@@ -9,6 +9,7 @@ from add_sound_to_video import add_sound_to_video
 import random
 from moviepy.editor import VideoFileClip, concatenate_videoclips
 import cv2
+import ffmpeg
 
 overlay_and_sound_duration = 4
 
@@ -147,3 +148,14 @@ def speed_up_video_60_fps(input_path, output_path, target_fps=60):
     cv2.destroyAllWindows()
 
     print("Video interpolation completed.")
+
+
+def change_video_metadata(input_file, output_file, metadata):
+    # Open the input file
+    stream = ffmpeg.input(input_file)
+
+    # Apply metadata changes
+    stream = ffmpeg.output(stream, output_file, **metadata)
+
+    # Run the ffmpeg command
+    ffmpeg.run(stream)
