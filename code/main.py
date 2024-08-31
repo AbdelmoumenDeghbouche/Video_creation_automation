@@ -85,7 +85,7 @@ async def generate_video(
         # Step 1: Generate AI audio, Split, and crop the selected random video
         logging.info("Starting video processing...")
         # Uncomment if needed
-        # generate_ai_voice(arabic_text, eleven_labs_api_key)
+        generate_ai_voice(arabic_text, eleven_labs_api_key)
         process_video(selected_video_path, f"videos/{background_video_folder}/clips")
 
         # Step 2: Generate images from text
